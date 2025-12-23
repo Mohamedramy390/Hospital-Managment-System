@@ -19,6 +19,10 @@ exports.createPatient = async (req, res) => {
     try {
         const { firstName, lastName, dob } = req.body;
 
+        if (!firstName || !lastName) {
+            return res.status(400).json({ message: 'First Name and Last Name are required' });
+        }
+
         // 1. Generate Credentials
         const tempPassword = Math.random().toString(36).slice(-8); // Random 8 chars
         const salt = await bcrypt.genSalt(10);
@@ -39,17 +43,28 @@ exports.createPatient = async (req, res) => {
             const roleId = roles[0].RoleID;
 
             // 3. Create User
+            // Note: Schema might have 'RoleID' and legacy 'Role' enum or vice versa. We insert both for maximizing compatibility.
             const [userRes] = await connection.query(
                 'INSERT INTO User (Username, PasswordHash, Role, RoleID) VALUES (?, ?, ?, ?)',
                 [username, hashedPassword, 'Patient', roleId]
             );
             const userId = userRes.insertId;
 
+            if (!userId) {
+                throw new Error("Failed to insert User, no ID returned.");
+            }
+
             // 4. Create Patient linked to User
-            await connection.query(
+            // Ensure DOB is valid or NULL
+            const birthDate = dob || null;
+            const [patientRes] = await connection.query(
                 'INSERT INTO Patient (UserID, FirstName, LastName, DateOfBirth) VALUES (?, ?, ?, ?)',
-                [userId, firstName, lastName, dob]
+                [userId, firstName, lastName, birthDate]
             );
+
+            if (patientRes.affectedRows === 0) {
+                throw new Error("Failed to insert Patient record.");
+            }
 
             await connection.commit();
 
@@ -61,12 +76,14 @@ exports.createPatient = async (req, res) => {
 
         } catch (err) {
             await connection.rollback();
+            console.error("Patient Creation Transaction Error:", err);
             throw err;
         } finally {
             connection.release();
         }
 
     } catch (error) {
+        console.error("createPatient Error:", error);
         res.status(500).json({ message: error.message });
     }
 };

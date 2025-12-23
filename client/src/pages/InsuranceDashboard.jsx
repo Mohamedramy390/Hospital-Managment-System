@@ -57,9 +57,7 @@ const InsuranceDashboard = () => {
                 const claim = claims.find(c => c.ClaimID == statusUpdate.claimId);
                 if (claim) {
                     try {
-                        const approvedAmount = statusUpdate.status === 'Approved'
-                            ? claim.ClaimAmount
-                            : null; // Let backend use claim amount for full approval
+                        const approvedAmount = statusUpdate.approvedAmount ? Number(statusUpdate.approvedAmount) : claim.ClaimAmount;
 
                         const result = await processApprovedClaim({
                             claimId: statusUpdate.claimId,
@@ -348,13 +346,20 @@ const InsuranceDashboard = () => {
                             <select
                                 className="w-full border p-2 rounded"
                                 value={statusUpdate.claimId}
-                                onChange={(e) => setStatusUpdate({ ...statusUpdate, claimId: e.target.value })}
+                                onChange={(e) => {
+                                    const c = claims.find(c => c.ClaimID == e.target.value);
+                                    setStatusUpdate({
+                                        ...statusUpdate,
+                                        claimId: e.target.value,
+                                        approvedAmount: c ? c.ClaimAmount : '' // Default to claim amount
+                                    });
+                                }}
                                 required
                             >
                                 <option value="">Select Claim</option>
                                 {claims.map(claim => (
                                     <option key={claim.ClaimID} value={claim.ClaimID}>
-                                        Claim #{claim.ClaimID} - {claim.FirstName} {claim.LastName} - {claim.ProviderName}
+                                        Claim #{claim.ClaimID} - {claim.FirstName} {claim.LastName} - ${claim.ClaimAmount}
                                     </option>
                                 ))}
                             </select>
@@ -377,6 +382,28 @@ const InsuranceDashboard = () => {
                                 <option value="Paid">Paid</option>
                             </select>
                         </div>
+
+                        {/* Approved Amount Input - Only for Approved/Partially Approved */}
+                        {(statusUpdate.status === 'Approved' || statusUpdate.status === 'Partially Approved') && (
+                            <div>
+                                <label className="block text-sm font-medium mb-1 text-green-700">
+                                    Approved Amount to Pay ($)
+                                </label>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    className="w-full border p-2 rounded border-green-300 bg-green-50"
+                                    placeholder="Enter amount insurance will pay"
+                                    value={statusUpdate.approvedAmount || ''}
+                                    onChange={(e) => setStatusUpdate({ ...statusUpdate, approvedAmount: e.target.value })}
+                                    required
+                                />
+                                <p className="text-xs text-green-600 mt-1">
+                                    This amount will be recorded as paid by Insurance. The patient will owe the remaining balance.
+                                </p>
+                            </div>
+                        )}
+
                         <div>
                             <label className="block text-sm font-medium mb-1">Notes</label>
                             <textarea
@@ -389,7 +416,7 @@ const InsuranceDashboard = () => {
                             />
                         </div>
                         <button type="submit" className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
-                            Update Status
+                            Update Status & Process Payment
                         </button>
                     </form>
                 </div>

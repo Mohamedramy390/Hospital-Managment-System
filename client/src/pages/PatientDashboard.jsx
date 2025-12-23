@@ -275,8 +275,11 @@ const PatientDashboard = () => {
                                                     <p className="font-bold text-gray-800">Invoice #{inv.InvoiceID}</p>
                                                     <p className="text-xs text-gray-500">Date: {new Date(inv.AdmissionTime).toLocaleDateString()}</p>
                                                 </div>
-                                                <span className={`px-2 py-1 rounded text-xs uppercase font-bold ${inv.Status === 'Paid' ? 'bg-green-100 text-green-700' : inv.Status === 'Partially Paid' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
-                                                    {inv.Status}
+                                                {/* Logic to determine badge: If balance > 0, it is at least Partially Paid or Unpaid, never fully Paid */}
+                                                <span className={`px-2 py-1 rounded text-xs uppercase font-bold ${remainingBalance <= 0.01 ? 'bg-green-100 text-green-700' :
+                                                    totalPaid > 0 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'
+                                                    }`}>
+                                                    {remainingBalance <= 0.01 ? 'Paid' : totalPaid > 0 ? 'Partially Paid' : 'Unpaid'}
                                                 </span>
                                             </div>
 
@@ -286,7 +289,7 @@ const PatientDashboard = () => {
                                                     <span className="font-bold ml-2">${totalAmount.toFixed(2)}</span>
                                                 </div>
                                                 <div>
-                                                    <span className="text-gray-600">Paid (Insurance):</span>
+                                                    <span className="text-gray-600">Paid (Insurance/You):</span>
                                                     <span className="font-bold ml-2 text-green-600">${totalPaid.toFixed(2)}</span>
                                                 </div>
                                                 <div className="col-span-2">
@@ -295,14 +298,18 @@ const PatientDashboard = () => {
                                                 </div>
                                             </div>
 
-                                            {inv.Status !== 'Paid' && remainingBalance > 0 && (
+                                            {remainingBalance > 0.01 ? (
                                                 <button
                                                     onClick={() => handlePay(inv.InvoiceID, remainingBalance.toFixed(2))}
-                                                    className="w-full bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 flex items-center justify-center space-x-2"
+                                                    className="w-full bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 flex items-center justify-center space-x-2 mt-2"
                                                 >
                                                     <CreditCard size={16} />
-                                                    <span>Pay ${remainingBalance.toFixed(2)}</span>
+                                                    <span>Pay Balance ${remainingBalance.toFixed(2)}</span>
                                                 </button>
+                                            ) : (
+                                                <div className="text-center text-sm text-green-600 font-bold mt-2 border-t pt-2">
+                                                    Fully Paid
+                                                </div>
                                             )}
                                         </div>
                                     );
@@ -318,3 +325,4 @@ const PatientDashboard = () => {
 };
 
 export default PatientDashboard;
+// Re-build force updated status logic
