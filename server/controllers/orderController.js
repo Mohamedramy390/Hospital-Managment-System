@@ -1,11 +1,19 @@
+const db = require('../db'); // Added db import
 const Lab = require('../models/Lab');
 const Prescription = require('../models/Prescription');
 
 exports.createLabOrder = async (req, res) => {
     try {
+        // Get StaffID from UserID
+        const [staff] = await db.query('SELECT StaffID FROM Staff WHERE UserID = ?', [req.user.id]);
+        if (staff.length === 0) {
+            return res.status(403).json({ message: 'User is not a staff member' });
+        }
+        const staffId = staff[0].StaffID;
+
         const orderId = await Lab.createOrder({
             ...req.body,
-            requestingStaffId: req.user.id // Simplified: UserID as StaffID for now
+            requestingStaffId: staffId
         });
         res.status(201).json({ message: 'Lab order created', orderId });
     } catch (error) {
@@ -36,9 +44,16 @@ exports.addLabResult = async (req, res) => {
 
 exports.createPrescription = async (req, res) => {
     try {
+        // Get StaffID from UserID
+        const [staff] = await db.query('SELECT StaffID FROM Staff WHERE UserID = ?', [req.user.id]);
+        if (staff.length === 0) {
+            return res.status(403).json({ message: 'User is not a staff member' });
+        }
+        const staffId = staff[0].StaffID;
+
         const prescriptionId = await Prescription.create({
             ...req.body,
-            staffId: req.user.id
+            staffId: staffId
         });
         res.status(201).json({ message: 'Prescription created', prescriptionId });
     } catch (error) {

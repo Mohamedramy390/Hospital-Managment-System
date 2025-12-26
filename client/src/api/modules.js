@@ -49,3 +49,6 @@ export const getSurgeryRequestsByVisit = (visitId) => api.get(`/surgery/by-visit
 export const getAvailableOpRooms = () => api.get('/surgery/rooms/available');
 export const getAssignedSurgeries = () => api.get('/surgery/assigned');
 export const getPendingSurgeryRequests = () => api.get('/surgery/pending');
+
+// Admin
+export const getAuditLogs = () => api.get('/admin/audit-logs');

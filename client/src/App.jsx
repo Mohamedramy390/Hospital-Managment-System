@@ -15,6 +15,7 @@ import PatientDashboard from './pages/PatientDashboard';
 import NurseDashboard from './pages/NurseDashboard';
 import PharmacistDashboard from './pages/PharmacistDashboard';
 import InsuranceDashboard from './pages/InsuranceDashboard';
+import AuditLogs from './pages/AuditLogs';
 
 
 
@@ -31,6 +32,7 @@ function App() {
               <Route index element={<Dashboard />} />
               {/* Module Routes Placeholder */}
               <Route path="admin" element={<AdminDashboard />} />
+              <Route path="admin/audit-logs" element={<AuditLogs />} />
               <Route path="logistics" element={<LogisticsDashboard />} />
               <Route path="clinical" element={<ClinicalDashboard />} />
               <Route path="staffing" element={<NurseDashboard />} />

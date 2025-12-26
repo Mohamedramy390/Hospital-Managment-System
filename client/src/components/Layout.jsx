@@ -56,7 +56,10 @@ const Layout = () => {
                     </div>
 
                     {(user.role === 'Admin' || user.role === 'Staff') && (
-                        <SidebarItem icon={Shield} label="Admin" to="/admin" />
+                        <>
+                            <SidebarItem icon={Shield} label="Admin" to="/admin" />
+                            {user.role === 'Admin' && <SidebarItem icon={ClipboardList} label="Audit Logs" to="/admin/audit-logs" />}
+                        </>
                     )}
 
                     {(user.role === 'Admin' || user.role === 'Receptionist') && (

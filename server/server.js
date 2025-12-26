@@ -62,6 +62,7 @@ app.use('/api/pharmacy', pharmacyRoutes);
 app.use('/api/portal', patientPortalRoutes);
 app.use('/api/surgery', surgeryRoutes);
 app.use('/api/insurance', insuranceRoutes);
+app.use('/api/admin', require('./routes/adminRoutes'));
 
 const PORT = process.env.PORT || 5000;
 
